@@ -48,3 +48,18 @@ async function run() {
     console.error("MongoDB connection failed:", err);
   }
 }
+app.post("/artists/:id/favorite", async (req, res) => {
+      const { id } = req.params;
+      const { userEmail } = req.body;
+      if (!userEmail) return res.status(400).send({ message: "User email required" });
+
+      try {
+        await artifyCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $addToSet: { favoritedBy: userEmail } }
+        );
+        res.send({ message: "Added to favorites" });
+      } catch (err) {
+        res.status(500).send({ message: "Server error" });
+      }
+    });
