@@ -1,14 +1,20 @@
+require('dotenv').config();
+
+
+
+
 const express = require('express'); 
 const cors = require('cors'); 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb'); 
 
 const app = express(); 
-const port = 3000; 
+const port = process.env.PORT || 3000;
 
 app.use(cors()); 
 app.use(express.json()); 
 
-const uri = "mongodb+srv://simpleDBUser:Artify12345@cluster0.oqgyppo.mongodb.net/artify?retryWrites=true&w=majority&appName=Cluster0"; 
+const uri = process.env.MONGO_URI;        
+const secretKey = process.env.SECRET_KEY;
 
 const client = new MongoClient(uri, { 
   serverApi: { 
@@ -131,7 +137,7 @@ async function run() {
       } 
     }); 
 
-    await client.db("admin").command({ ping: 1 }); 
+    // await client.db("admin").command({ ping: 1 }); 
     console.log("Successfully connected to MongoDB!"); 
   } catch (err) { 
     console.error(" MongoDB connection failed:", err); 
