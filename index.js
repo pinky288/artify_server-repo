@@ -100,3 +100,41 @@ app.post("/artists/:id/favorite", async (req, res) => {
         res.status(500).send({ message: "Server error" });
       }
     });
+
+    app.post("/artists/:id/toggle-like", async (req, res) => {
+      const { id } = req.params;
+      const { action, userEmail } = req.body;
+
+      if (!userEmail) return res.status(403).json({ message: "Login required" });
+
+      try {
+        const artwork = await artifyCollection.findOne({ _id: new ObjectId(id) });
+        if (!artwork) return res.status(404).json({ message: "Artwork not found" });
+
+        let updatedLikes = artwork.likes || 0;
+        let likedBy = artwork.likedBy || [];
+
+        if (action === "like") {
+          if (!likedBy.includes(userEmail)) {
+            likedBy.push(userEmail);
+            updatedLikes += 1;
+          }
+        } else if (action === "unlike") {
+          if (likedBy.includes(userEmail)) {
+            likedBy = likedBy.filter(email => email !== userEmail);
+            updatedLikes -= 1;
+          }
+        }
+
+        const updatedArtwork = await artifyCollection.findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          { $set: { likes: updatedLikes, likedBy } },
+          { returnDocument: "after" }
+        );
+
+        res.json(updatedArtwork.value);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+      }
+    });
