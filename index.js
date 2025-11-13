@@ -75,3 +75,28 @@ app.post("/artists/:id/favorite", async (req, res) => {
         res.status(500).send({ message: "Server error" });
       }
     });
+
+    app.get("/artists/:id", async (req, res) => {
+      const id = req.params.id;
+      try {
+        let query;
+        if (ObjectId.isValid(id)) {
+          query = { _id: new ObjectId(id) };
+        } else {
+          query = { _id: id };
+        }
+
+        let artwork = await artifyCollection.findOne(query);
+        if (!artwork) {
+          artwork = await artifyCollection.findOne({ _id: id });
+        }
+
+        if (!artwork) {
+          return res.status(404).send({ message: "Artwork not found" });
+        }
+
+        res.send(artwork);
+      } catch (err) {
+        res.status(500).send({ message: "Server error" });
+      }
+    });
