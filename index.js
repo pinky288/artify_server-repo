@@ -17,3 +17,34 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+async function run() {
+  try {
+    await client.connect();
+    const db = client.db("artify-db");
+    const artifyCollection = db.collection("artists");
+    const favoritesCollection = db.collection("favorites");
+
+    app.get("/artists", async (req, res) => {
+      try {
+        const { visibility } = req.query;
+        let query = {};
+
+        if (visibility) {
+          query.visibility = visibility;
+        }
+
+        const result = await artifyCollection.find(query).toArray();
+        res.send(result);
+      } catch (err) {
+        console.error(err);
+        res.status(500).send({ message: "Server error" });
+      }
+    });
+
+    await client.db("admin").command({ ping: 1 });
+    console.log("Successfully connected to MongoDB!");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err);
+  }
+}
