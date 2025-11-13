@@ -63,3 +63,15 @@ app.post("/artists/:id/favorite", async (req, res) => {
         res.status(500).send({ message: "Server error" });
       }
     });
+
+    app.get("/artists/favorites", async (req, res) => {
+      const { email } = req.query;
+      if (!email) return res.status(400).send({ message: "User email required" });
+
+      try {
+        const favorites = await artifyCollection.find({ favoritedBy: email }).toArray();
+        res.send(favorites);
+      } catch (err) {
+        res.status(500).send({ message: "Server error" });
+      }
+    });
